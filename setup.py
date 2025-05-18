@@ -43,7 +43,11 @@ setup_args = {
       'keywords':"telecom voip telephony freeswitch ivr rest",
       'license':license,
       'zip_safe':False,
+      'python_requires':'>=3.9',
       'classifiers':[
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python",
         "Operating System :: POSIX",
         "Topic :: Internet",

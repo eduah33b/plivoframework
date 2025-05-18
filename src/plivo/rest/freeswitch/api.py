@@ -207,7 +207,7 @@ class PlivoRestApi(object):
                     pause_secs = child_instance.length
                     pause_str = 'file_string://silence_stream://%s' % (pause_secs * 1000)
                     sound_files.append(pause_str)
-        except Exception, e:
+        except Exception as e:
             self._rest_inbound_socket.log.warn('Fetching remote sound from restxml failed: %s' % str(e))
         finally:
             self._rest_inbound_socket.log.info('Fetching remote sound from restxml done for %s' % remote_url)
@@ -407,7 +407,7 @@ class PlivoRestApi(object):
         """Reload plivo config for rest server
         """
         self._rest_inbound_socket.log.debug("RESTAPI Reload with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = "Plivo config reload failed"
         result = False
 
@@ -421,13 +421,13 @@ class PlivoRestApi(object):
                         pid = int(open(outbound_pidfile, 'r').read().strip())
                         os.kill(pid, 1)
                         extra += " and outbound_server"
-                    except Exception, e:
+                    except Exception as e:
                         extra += ", failed for outbound_server (%s)" % str(e)
                 else:
                     extra += ", failed for outbound_server (no pidfile)"
                 msg = "Plivo config reloaded : %s" % extra
                 result = True
-            except Exception, e:
+            except Exception as e:
                 msg += ' : %s' % str(e)
                 result = False
 
@@ -438,7 +438,7 @@ class PlivoRestApi(object):
         """Reload plivo cache server config
         """
         self._rest_inbound_socket.log.debug("RESTAPI ReloadCacheConfig with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = "ReloadCacheConfig Failed"
         result = False
 
@@ -466,7 +466,7 @@ class PlivoRestApi(object):
             else:
                 raise Exception(msg)
 
-        except Exception, e:
+        except Exception as e:
             msg = "Plivo Cache Server config reload failed"
             self._rest_inbound_socket.log.error("ReloadCacheConfig Failed -- %s" % str(e))
             result = False
@@ -538,7 +538,7 @@ class PlivoRestApi(object):
         [SendOnPreanswer]: SendDigits on early media instead of answer.
         """
         self._rest_inbound_socket.log.debug("RESTAPI Call with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
         request_uuid = ""
@@ -654,7 +654,7 @@ class PlivoRestApi(object):
         [SendOnPreanswer]: SendDigits on early media instead of answer.
         """
         self._rest_inbound_socket.log.debug("RESTAPI BulkCall with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
         request_uuid = ""
@@ -789,7 +789,7 @@ class PlivoRestApi(object):
         should be used for calls which are currently in progress and have no CallUUID.
         """
         self._rest_inbound_socket.log.debug("RESTAPI HangupCall with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -854,7 +854,7 @@ class PlivoRestApi(object):
     @auth_protect
     def hangup_all_calls(self):
         self._rest_inbound_socket.log.debug("RESTAPI HangupAllCalls with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         """Hangup All Live Calls in the system
         """
         msg = "All Calls Hungup"
@@ -921,7 +921,7 @@ class PlivoRestApi(object):
         SchedHangupId: id of the scheduled hangup.
         """
         self._rest_inbound_socket.log.debug("RESTAPI ScheduleHangup with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -951,7 +951,7 @@ class PlivoRestApi(object):
         TimeLimit: Max recording duration in seconds
         """
         self._rest_inbound_socket.log.debug("RESTAPI RecordStart with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1004,7 +1004,7 @@ class PlivoRestApi(object):
                     or 'all' to stop all current recordings on this call
         """
         self._rest_inbound_socket.log.debug("RESTAPI RecordStop with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1038,7 +1038,7 @@ class PlivoRestApi(object):
                 or 'all' to mute all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceMute with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1078,7 +1078,7 @@ class PlivoRestApi(object):
                 or 'all' to unmute all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceUnmute with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1118,7 +1118,7 @@ class PlivoRestApi(object):
                 or 'all' to kick all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceKick with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1158,7 +1158,7 @@ class PlivoRestApi(object):
                 or 'all' to hangup all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceHangup with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1198,7 +1198,7 @@ class PlivoRestApi(object):
                 or 'all' to deaf all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceDeaf with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1238,7 +1238,7 @@ class PlivoRestApi(object):
                 or 'all' to undeaf all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceUndeaf with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1279,7 +1279,7 @@ class PlivoRestApi(object):
         FileName: Default empty, if given this will be used for the recording
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceRecordStart with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1328,7 +1328,7 @@ class PlivoRestApi(object):
                     or 'all' to stop all current recordings on conference
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceRecordStop with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1369,7 +1369,7 @@ class PlivoRestApi(object):
         MemberID: conference member id or 'all' to play file to all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferencePlay with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1421,7 +1421,7 @@ class PlivoRestApi(object):
         MemberID: conference member id or 'all' to say text to all members
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceSpeak with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1474,7 +1474,7 @@ class PlivoRestApi(object):
         All Filter parameters can be mixed.
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceListMembers with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1504,7 +1504,7 @@ class PlivoRestApi(object):
             msg = "Conference ListMembers Executed"
             result = True
             return self.send_response(Success=result, Message=msg, List=member_list)
-        except Exception, e:
+        except Exception as e:
             msg = "Conference ListMembers Failed to parse result"
             result = False
             self._rest_inbound_socket.log.error("Conference ListMembers Failed -- %s" % str(e))
@@ -1529,7 +1529,7 @@ class PlivoRestApi(object):
         All Filter parameters can be mixed.
         """
         self._rest_inbound_socket.log.debug("RESTAPI ConferenceList with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1546,7 +1546,7 @@ class PlivoRestApi(object):
                 msg = "Conference List Executed"
                 result = True
                 return self.send_response(Success=result, Message=msg, List=confs)
-            except Exception, e:
+            except Exception as e:
                 msg = "Conference List Failed to parse result"
                 result = False
                 self._rest_inbound_socket.log.error("Conference List Failed -- %s" % str(e))
@@ -1627,7 +1627,7 @@ class PlivoRestApi(object):
         [ConfirmKey]: A one key digits the called party must press to accept the call.
         """
         self._rest_inbound_socket.log.debug("RESTAPI GroupCall with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
         request_uuid = str(uuid.uuid1())
@@ -1804,7 +1804,7 @@ class PlivoRestApi(object):
 
         """
         self._rest_inbound_socket.log.debug("RESTAPI Play with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1891,7 +1891,7 @@ class PlivoRestApi(object):
         Returns a scheduled task with id SchedPlayId that you can use to cancel play.
         """
         self._rest_inbound_socket.log.debug("RESTAPI SchedulePlay with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -1966,7 +1966,7 @@ class PlivoRestApi(object):
         SchedPlayId: id of the scheduled play.
         """
         self._rest_inbound_socket.log.debug("RESTAPI CancelScheduledPlay with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -2003,7 +2003,7 @@ class PlivoRestApi(object):
 
         """
         self._rest_inbound_socket.log.debug("RESTAPI PlayStop with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -2048,7 +2048,7 @@ class PlivoRestApi(object):
 
         """
         self._rest_inbound_socket.log.debug("RESTAPI SoundTouch with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -2143,7 +2143,7 @@ class PlivoRestApi(object):
         CallUUID: Unique Call ID to which the action should occur to.
         """
         self._rest_inbound_socket.log.debug("RESTAPI SoundTouchStop with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 
@@ -2193,7 +2193,7 @@ class PlivoRestApi(object):
                 Default is 'aleg' .
         """
         self._rest_inbound_socket.log.debug("RESTAPI SendDigits with %s" \
-                                        % str(request.form.items()))
+                                        % str(list(request.form.items())))
         msg = ""
         result = False
 

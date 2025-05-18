@@ -7,9 +7,9 @@ import uuid
 import os
 import os.path
 from datetime import datetime
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import traceback
 
 import redis
@@ -100,13 +100,13 @@ class ResourceCache(object):
 
     def cache_resource(self, url):
         if self.proxy_url is not None:
-            proxy = urllib2.ProxyHandler({'http': self.proxy_url})
-            opener = urllib2.build_opener(proxy)
-            urllib2.install_opener(opener)
-        request = urllib2.Request(url)
+            proxy = urllib.request.ProxyHandler({'http': self.proxy_url})
+            opener = urllib.request.build_opener(proxy)
+            urllib.request.install_opener(opener)
+        request = urllib.request.Request(url)
         user_agent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.35 Safari/535.1'
         request.add_header('User-Agent', user_agent)
-        handler = urllib2.urlopen(request, timeout=self.http_timeout)
+        handler = urllib.request.urlopen(request, timeout=self.http_timeout)
         try:
             resource_type = MIME_TYPES[handler.headers.get('Content-Type')]
             if not resource_type:
@@ -132,16 +132,16 @@ class ResourceCache(object):
         no_change = (False, None, None)
         # if no ETag, then check for 'Last-Modified' header
         if etag is not None and etag != "":
-            request = urllib2.Request(url)
+            request = urllib.request.Request(url)
             request.add_header('If-None-Match', etag)
         elif last_modified is not None and last_modified != "":
-            request = urllib2.Request(url)
+            request = urllib.request.Request(url)
             request.add_header('If-Modified-Since', last_modified)
         else:
             return no_change
         try:
-            second_try = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
+            second_try = urllib.request.urlopen(request)
+        except urllib.error.HTTPError as e:
             # if http code is 304, no change
             if e.code == 304:
                 return no_change
@@ -191,7 +191,7 @@ def get_resource(server, url):
                         stream, resource_type = server.cache.cache_resource(url)
                     except UnsupportedResourceFormat:
                         server.log.error("Cache -- Ignoring Unsupported File at - %s" % url)
-        except Exception, e:
+        except Exception as e:
             server.log.error("Cache -- Failure !")
             [ server.log.debug('Cache -- Error: %s' % line) for line in \
                             traceback.format_exc().splitlines() ]
@@ -258,7 +258,7 @@ class PlivoCacheApi(object):
                                   headers=None, mimetype=_type,
                                   content_type=_type,
                                   direct_passthrough=False)
-        except Exception, e:
+        except Exception as e:
             self.log.error("/Cache/ Error: %s" % str(e))
             [ self.log.error('/Cache/ Error: %s' % line) for line in \
                             traceback.format_exc().splitlines() ]
@@ -278,7 +278,7 @@ class PlivoCacheApi(object):
                 return "NO TYPE", 404
             self.log.debug("Url %s: type is %s" % (str(url), str(resource_type)))
             return flask.jsonify(CacheType=resource_type)
-        except Exception, e:
+        except Exception as e:
             self.log.error("/CacheType/ Error: %s" % str(e))
             [ self.log.error('/CacheType/ Error: %s' % line) for line in \
                             traceback.format_exc().splitlines() ]
@@ -289,7 +289,7 @@ class PlivoCacheApi(object):
         try:
             self.reload()
             return flask.jsonify(Success=True, Message="ReloadConfig done")
-        except Exception, e:
+        except Exception as e:
             self.log.error("/ReloadConfig/ Error: %s" % str(e))
             [ self.log.error('/ReloadConfig/ Error: %s' % line) for line in \
                             traceback.format_exc().splitlines() ]

@@ -42,7 +42,7 @@ class PlivoCacheServer(PlivoCacheApi):
         self.load_config()
 
         # expose API functions to flask app
-        for path, func_desc in cacheurls.URLS.iteritems():
+        for path, func_desc in cacheurls.URLS.items():
             func, methods = func_desc
             fn = getattr(self, func.__name__)
             self.app.add_url_rule(path, func.__name__, fn, methods=methods)
@@ -190,7 +190,7 @@ class PlivoCacheServer(PlivoCacheApi):
             self._config = config
             self.log.info("Config : %s" % str(self._config.dumps()))
 
-        except Exception, e:
+        except Exception as e:
             if backup_config:
                 self._config = backup_config
                 self.load_config()

@@ -11,7 +11,7 @@ if __name__ == '__main__':
         inbound_event_listener = InboundEventSocket('127.0.0.1', 8021, 'ClueCon', filter="ALL")
         try:
             inbound_event_listener.connect()
-        except ConnectError, e:
+        except ConnectError as e:
             log.error("connect failed: %s" % str(e))
             raise SystemExit('exit')
 

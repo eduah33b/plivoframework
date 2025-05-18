@@ -60,64 +60,34 @@ fi
 read INPUT
 
 
-declare -i PY_MAJOR_VERSION
-declare -i PY_MINOR_VERSION
-PY_MAJOR_VERSION=$(python -V 2>&1 |sed -e 's/Python[[:space:]]\+\([0-9]\)\..*/\1/')
-PY_MINOR_VERSION=$(python -V 2>&1 |sed -e 's/Python[[:space:]]\+[0-9]\+\.\([0-9]\+\).*/\1/')
-
-if [ $PY_MAJOR_VERSION -ne 2 ] || [ $PY_MINOR_VERSION -lt 4 ]; then
+# Require Python 3.9+
+if ! command -v python3 >/dev/null 2>&1; then
     echo ""
-    echo "Need Python version >= 2.4.X to install Plivo"
-    echo "Please install a compatible version of python."
+    echo "python3 is required but not found."
+    echo "Please install Python 3.9 or higher."
+    echo ""
+    exit 1
+fi
+PY_VERSION_STR=$(python3 --version 2>&1)
+PY_MAJOR_VERSION=$(echo "$PY_VERSION_STR" | sed -E 's/Python[[:space:]]+([0-9]+)\..*/\1/')
+PY_MINOR_VERSION=$(echo "$PY_VERSION_STR" | sed -E 's/Python[[:space:]]+[0-9]+\.[0-9]+\.?([0-9]*).*/\1/')
+if [ "$PY_MAJOR_VERSION" -ne 3 ] || [ "$PY_MINOR_VERSION" -lt 9 ]; then
+    echo ""
+    echo "Need Python version >= 3.9 to install Plivo"
+    echo "Please install a compatible version of python (e.g., python3.9+)."
     echo ""
     exit 1
 fi
 
-echo "Setting up Prerequisites and Dependencies"
+echo "Setting up Prerequisites and Dependencies for Python3"
 case $DIST in
     'DEBIAN')
         DEBIAN_VERSION=$(cat /etc/debian_version |cut -d'.' -f1)
         apt-get -y update
         apt-get -y install autoconf automake autotools-dev binutils bison build-essential cpp curl flex g++ gcc git-core libaudiofile-dev libc6-dev libdb-dev libexpat1 libgdbm-dev libgnutls-dev libmcrypt-dev libncurses5-dev libnewt-dev libpcre3 libpopt-dev libsctp-dev libsqlite3-dev libtiff4 libtiff4-dev libtool libx11-dev libxml2 libxml2-dev lksctp-tools lynx m4 make mcrypt ncftp nmap openssl sox sqlite3 ssl-cert ssl-cert unixodbc-dev unzip zip zlib1g-dev zlib1g-dev libevent-dev
-        if [ "$DEBIAN_VERSION" = "5" ]; then
-            apt-get -y update
-            apt-get -y install git-core python-setuptools python-dev build-essential libreadline5-dev
-        else
-            apt-get -y update
-            apt-get -y install git-core python-setuptools python-dev build-essential
-        fi
-        if [ $PY_MAJOR_VERSION -eq 2 ] && [ $PY_MINOR_VERSION -lt 6 ]; then
-            # Setup Env
-            mkdir -p $REAL_PATH/deploy
-            DEPLOY=$REAL_PATH/deploy
-            cd $DEPLOY
-            cd $REAL_PATH/deploy
-
-            # Install Isolated copy of python
-		    if [ ! -f $REAL_PATH/bin/python ]; then
-			    mkdir source
-			    cd source
-			    wget http://www.python.org/ftp/python/$LAST_PYTHON_VERSION/Python-$LAST_PYTHON_VERSION.tgz
-			    tar -xvf Python-$LAST_PYTHON_VERSION.tgz
-			    cd Python-$LAST_PYTHON_VERSION
-			    ./configure --prefix=$DEPLOY
-			    make && make install
-		    fi
-            # This is what does all the magic by setting upgraded python
-            export PATH=$DEPLOY/bin:$PATH
-
-            # Install easy_install
-            cd $DEPLOY/source
-            wget --no-check-certificate $PLIVO_SETUP_SCRIPT
-            $DEPLOY/bin/python ez_setup.py
-
-            EASY_INSTALL=$(which easy_install)
-            $DEPLOY/bin/python $EASY_INSTALL --prefix $DEPLOY virtualenv
-            $DEPLOY/bin/python $EASY_INSTALL --prefix $DEPLOY pip
-	    else
-		    easy_install virtualenv
-		    easy_install pip
-	    fi
+        # Install Python3 and build dependencies
+        apt-get -y update
+        apt-get -y install python3 python3-dev python3-venv python3-pip git-core build-essential
     ;;
     'CENTOS')
         yum -y update
@@ -179,8 +149,8 @@ gpgcheck = 1
 esac
 
 
-# Setup virtualenv
-virtualenv --no-site-packages $REAL_PATH
+# Setup Python3 virtual environment
+python3 -m venv $REAL_PATH
 source $REAL_PATH/bin/activate
 
 # force installation of gevent 1.03a

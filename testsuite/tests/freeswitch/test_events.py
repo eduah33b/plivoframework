@@ -31,18 +31,18 @@ Task-Runtime: 1294076056
 
     def test_command_reply(self):
         ev = Event(self.EVENT_COMMAND_REPLY)
-        self.assertEquals(ev.get_content_type(), "command/reply")
-        self.assertEquals(ev.get_reply_text(), "+OK accepted")
+        self.assertEqual(ev.get_content_type(), "command/reply")
+        self.assertEqual(ev.get_reply_text(), "+OK accepted")
         self.assertTrue(ev.is_reply_text_success())
 
     def test_auth_request(self):
         ev = Event(self.EVENT_AUTH_REQUEST)
-        self.assertEquals(ev.get_content_type(), "auth/request")
+        self.assertEqual(ev.get_content_type(), "auth/request")
 
     def test_event_plain(self):
         ev1 = Event(self.EVENT_CONTENT_LENGTH)
-        self.assertEquals(ev1.get_content_length(), 491)
-        self.assertEquals(ev1.get_content_type(), "text/event-plain")
+        self.assertEqual(ev1.get_content_length(), 491)
+        self.assertEqual(ev1.get_content_type(), "text/event-plain")
         ev2 = Event(self.EVENT_PLAIN)
-        self.assertEquals(ev2.get_header("Event-Name"), "RE_SCHEDULE")
-        self.assertEquals(len(self.EVENT_PLAIN), ev1.get_content_length())
+        self.assertEqual(ev2.get_header("Event-Name"), "RE_SCHEDULE")
+        self.assertEqual(len(self.EVENT_PLAIN), ev1.get_content_length())

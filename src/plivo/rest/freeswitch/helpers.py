@@ -5,15 +5,15 @@ from gevent import monkey
 monkey.patch_all()
 
 import base64
-import ConfigParser
+import configparser
 from hashlib import sha1
 import hmac
-import httplib
+import http.client
 import os
 import os.path
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import uuid
 import traceback
 import re
@@ -53,17 +53,17 @@ def get_substring(start_char, end_char, data):
     return data[start_pos+len(start_char):end_pos]
 
 def url_exists(url):
-    p = urlparse.urlparse(url)
+    p = urllib.parse.urlparse(url)
     if p[4]:
         extra_string = "%s?%s" %(p[2], p[4])
     else:
         extra_string = p[2]
     try:
-        connection = httplib.HTTPConnection(p[1])
+        connection = http.client.HTTPConnection(p[1])
         connection.request('HEAD', extra_string)
         response = connection.getresponse()
         connection.close()
-        return response.status == httplib.OK
+        return response.status == http.client.OK
     except Exception:
         return False
 
@@ -111,11 +111,11 @@ class HTTPErrorProcessor(urllib2.HTTPErrorProcessor):
         return response
 
 
-class HTTPUrlRequest(urllib2.Request):
+class HTTPUrlRequest(urllib.request.Request):
     def get_method(self):
         if getattr(self, 'http_method', None):
             return self.http_method
-        return urllib2.Request.get_method(self)
+        return urllib.request.Request.get_method(self)
 
 
 class HTTPRequest:
@@ -140,27 +140,27 @@ class HTTPRequest:
         if params:
             if uri.find('?') > 0:
                 uri =  uri.split('?')[0]
-            uri = uri + '?' + urllib.urlencode(params)
+            uri = uri + '?' + urllib.parse.urlencode(params)
         return uri
 
     def _prepare_http_request(self, uri, params, method='POST'):
         # install error processor to handle HTTP 201 response correctly
         if self.opener is None:
-            self.opener = urllib2.build_opener(HTTPErrorProcessor)
-            urllib2.install_opener(self.opener)
+            self.opener = urllib.request.build_opener(HTTPErrorProcessor)
+            urllib.request.install_opener(self.opener)
 
         proxy_url = self.proxy_url
         if proxy_url:
             proxy = proxy_url.split('http://')[1]
-            proxyhandler = urllib2.ProxyHandler({'http': proxy})
-            opener = urllib2.build_opener(proxyhandler)
-            urllib2.install_opener(opener)
+            proxyhandler = urllib.request.ProxyHandler({'http': proxy})
+            opener = urllib.request.build_opener(proxyhandler)
+            urllib.request.install_opener(opener)
 
         if method and method == 'GET':
             uri = self._build_get_uri(uri, params)
             _request = HTTPUrlRequest(uri)
         else:
-            _request = HTTPUrlRequest(uri, urllib.urlencode(params))
+            _request = HTTPUrlRequest(uri, urllib.parse.urlencode(params))
             if method and (method == 'DELETE' or method == 'PUT'):
                 _request.http_method = method
 
@@ -190,20 +190,20 @@ class HTTPRequest:
                                                             % method)
         # Read all params in the query string and include them in params
         _params = params.copy()
-        query = urlparse.urlsplit(uri)[3]
+        query = urllib.parse.urlsplit(uri)[3]
         if query:
             if log:
                 log.debug("Extra params found in url query for %s %s" \
                                 % (method, uri))
-            qs = urlparse.parse_qs(query)
-            for k, v in qs.iteritems():
+            qs = urllib.parse.parse_qs(query)
+            for k, v in qs.items():
                 if v:
                     _params[k] = v[-1]
         if log:
             log.info("Fetching %s %s with %s" \
                             % (method, uri, _params))
         req = self._prepare_http_request(uri, _params, method)
-        res = urllib2.urlopen(req).read()
+        res = urllib.request.urlopen(req).read()
         if log:
             log.info("Sent to %s %s with %s -- Result: %s" \
                                 % (method, uri, _params, res))
@@ -211,7 +211,7 @@ class HTTPRequest:
 
 
 def get_config(filename):
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.read(filename)
     return config
 
@@ -226,7 +226,7 @@ def get_conf_value(config, section, key):
     try:
         value = config.get(section, key)
         return str(value)
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+    except (configparser.NoSectionError, configparser.NoOptionError):
         return ""
 
 
@@ -262,7 +262,7 @@ class HTTPJsonConfig(object):
 
 class PlivoConfig(object):
     def __init__(self, source):
-        self._cfg = ConfigParser.SafeConfigParser()
+        self._cfg = configparser.SafeConfigParser()
         self._cfg.optionxform = str # make case sensitive
         self._source = source
         self._json_cfg = None
@@ -283,7 +283,7 @@ class PlivoConfig(object):
         self._cfg.read(self._source)
         try:
             self._json_source = self._cfg.get('common', 'JSON_CONFIG_URL')
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (configparser.NoSectionError, configparser.NoOptionError):
             self._json_source = None
         if self._json_source:
             self._json_cfg = HTTPJsonConfig()
@@ -302,7 +302,7 @@ class PlivoConfig(object):
     def get(self, section, key, **kwargs):
         try:
             return self._cache[section][key].strip()
-        except KeyError, e:
+        except KeyError as e:
             try:
                 d = kwargs['default']
                 return d
@@ -324,10 +324,10 @@ def get_resource(socket, url):
             cache_url = socket.cache['url'].strip('/')
             data = {}
             data['url'] = url
-            url_values = urllib.urlencode(data)
+            url_values = urllib.parse.urlencode(data)
             full_url = '%s/CacheType/?%s' % (cache_url, url_values)
-            req = urllib2.Request(full_url)
-            handler = urllib2.urlopen(req)
+            req = urllib.request.Request(full_url)
+            handler = urllib.request.urlopen(req)
             response = handler.read()
             result = json.loads(response)
             cache_type = result['CacheType']
@@ -341,7 +341,7 @@ def get_resource(socket, url):
             else:
                 socket.log.warn("Unsupported format %s" % str(cache_type))
 
-    except Exception, e:
+    except Exception as e:
         socket.log.error("Cache Error !")
         socket.log.error("Cache Error: %s" % str(e))
 
@@ -381,35 +381,35 @@ def get_grammar_resource(socket, grammar):
                 cache_url = socket.cache['url'].strip('/')
                 data = {}
                 data['url'] = grammar
-                url_values = urllib.urlencode(data)
+                url_values = urllib.parse.urlencode(data)
                 full_url = '%s/CacheType/?%s' % (cache_url, url_values)
-                req = urllib2.Request(full_url)
-                handler = urllib2.urlopen(req)
+                req = urllib.request.Request(full_url)
+                handler = urllib.request.urlopen(req)
                 response = handler.read()
                 result = json.loads(response)
                 cache_type = result['CacheType']
                 if not cache_type in ('grxml', 'jsgf'):
                     socket.log.warn("Unsupported format %s" % str(cache_type))
-                    raise("Unsupported format %s" % str(cache_type))
+                    raise "Unsupported format %s"
                 full_url = '%s/Cache/?%s' % (cache_url, url_values)
                 socket.log.debug("Fetch grammar from %s" % str(full_url))
-                req = urllib2.Request(full_url)
-                handler = urllib2.urlopen(req)
+                req = urllib.request.Request(full_url)
+                handler = urllib.request.urlopen(req)
                 response = handler.read()
                 return response
-            except Exception, e:
+            except Exception as e:
                 socket.log.error("Grammar Cache Error !")
                 socket.log.error("Grammar Cache Error: %s" % str(e))
         # default fetch direct url
         socket.log.debug("Fetching grammar from %s" % str(grammar))
-        req = urllib2.Request(grammar)
-        handler = urllib2.urlopen(req)
+        req = urllib.request.Request(grammar)
+        handler = urllib.request.urlopen(req)
         response = handler.read()
         socket.log.debug("Grammar fetched from %s: %s" % (str(grammar), str(response)))
         if not response:
             raise Exception("No Grammar response")
         return response
-    except Exception, e:
+    except Exception as e:
         socket.log.error("Grammar Cache Error !")
         socket.log.error("Grammar Cache Error: %s" % str(e))
     return False

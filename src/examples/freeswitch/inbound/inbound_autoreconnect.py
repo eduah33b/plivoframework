@@ -23,7 +23,7 @@ class MyInboundEventSocket(InboundEventSocket):
                 self.connect()
                 self.log.info("Inbound socket connected")
                 self.serve_forever()
-            except ConnectError, e:
+            except ConnectError as e:
                 self.log.error("ConnectError: %s" % str(e))
             except (SystemExit, KeyboardInterrupt):
                 break
